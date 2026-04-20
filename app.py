@@ -65,6 +65,17 @@ page = st.sidebar.radio("Navigate", ["Home", "Cart", "Analytics"])
 search = st.sidebar.text_input("Search Product")
 category = st.sidebar.selectbox("Category", ["All", "Electronics", "Fashion"])
 
+# ---------------- RESET BUTTON ----------------
+st.sidebar.markdown("---")
+st.sidebar.subheader("🔄 System Control")
+
+if st.sidebar.button("Reset Session"):
+    st.session_state.views = 0
+    st.session_state.cart = 0
+    st.session_state.time_spent = 0
+    st.session_state.cart_items = []
+    st.rerun()
+
 # ---------------- FILTER ----------------
 filtered_products = [
     p for p in products
@@ -125,7 +136,7 @@ elif page == "Analytics":
     )
     st.pyplot(fig)
 
-# ---------------- ML PREDICTION ----------------
+# ---------------- ML INPUT ----------------
 st.sidebar.subheader("📊 AI Prediction")
 
 views = st.session_state.views
@@ -156,15 +167,22 @@ for f in required_features:
 
 input_data = pd.DataFrame([data])
 
-# ---------------- PREDICTION ----------------
-base_prob = model.predict_proba(input_data)[0][1]
+# ---------------- FIXED PREDICTION ----------------
+base_prob_raw = model.predict_proba(input_data)[0][1]
+
+# FIX: remove low bias (0.08 issue)
+base_prob = np.clip(base_prob_raw * 1.3, 0, 1)
 
 engagement = min(
     (views * 0.05 + cart * 0.25 + time_spent * 0.01),
     1
 )
 
-final_prob = min(0.7 * base_prob + 0.3 * engagement, 0.95)
+final_prob = np.clip(
+    (0.6 * base_prob) + (0.4 * engagement),
+    0,
+    0.95
+)
 
 st.sidebar.success(f"Purchase Probability: {final_prob:.2f}")
 
@@ -172,16 +190,10 @@ st.sidebar.success(f"Purchase Probability: {final_prob:.2f}")
 st.sidebar.subheader("🎁 Coupon Recommendation")
 
 if final_prob < 0.3:
-    coupon = "🔥 30% OFF Coupon"
-    reason = "High chance of cart abandonment"
-    st.sidebar.error(f"{coupon}\n\n{reason}")
+    st.sidebar.error("🔥 30% OFF Coupon\nHigh risk of cart abandonment")
 
 elif final_prob < 0.6:
-    coupon = "🎯 10% OFF Coupon"
-    reason = "Needs slight push to convert"
-    st.sidebar.warning(f"{coupon}\n\n{reason}")
+    st.sidebar.warning("🎯 10% OFF Coupon\nNeeds conversion push")
 
 else:
-    coupon = "✅ No Coupon Needed"
-    reason = "User likely to purchase anyway"
-    st.sidebar.success(f"{coupon}\n\n{reason}")
+    st.sidebar.success("✅ No Coupon Needed\nHigh purchase likelihood")
