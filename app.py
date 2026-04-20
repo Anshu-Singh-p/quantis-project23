@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -65,7 +66,11 @@ search = st.sidebar.text_input("Search Product")
 category = st.sidebar.selectbox("Category", ["All", "Electronics", "Fashion"])
 
 # ---------------- FILTER ----------------
-filtered_products = [p for p in products if search.lower() in p["name"].lower() and (category == "All" or p["category"] == category)]
+filtered_products = [
+    p for p in products
+    if search.lower() in p["name"].lower()
+    and (category == "All" or p["category"] == category)
+]
 
 # ---------------- HOME ----------------
 if page == "Home":
@@ -76,8 +81,9 @@ if page == "Home":
 
     for i, product in enumerate(filtered_products):
         with cols[i % 4]:
-            st.image(product["img"], use_column_width=True)
-            st.markdown(f"<div class='product-card'>", unsafe_allow_html=True)
+            st.image(product["img"], use_container_width=True)
+            st.markdown("<div class='product-card'>", unsafe_allow_html=True)
+
             st.subheader(product["name"])
             st.write(f"💰 ₹{product['price']}")
             st.write(f"⭐ {product['rating']}")
@@ -113,7 +119,10 @@ elif page == "Analytics":
     col3.metric("Time Spent", st.session_state.time_spent)
 
     fig, ax = plt.subplots()
-    ax.bar(["Views", "Cart", "Time"], [st.session_state.views, st.session_state.cart, st.session_state.time_spent])
+    ax.bar(
+        ["Views", "Cart", "Time"],
+        [st.session_state.views, st.session_state.cart, st.session_state.time_spent]
+    )
     st.pyplot(fig)
 
 # ---------------- ML PREDICTION ----------------
@@ -124,21 +133,55 @@ cart = st.session_state.cart
 time_spent = st.session_state.time_spent
 
 data = {}
+
 for f in required_features:
-    if f == "avg_spent": data[f] = 3000 + cart * 1500
-    elif f == "cart_additions": data[f] = cart
-    elif f == "discount": data[f] = min(0.1 + views * 0.01, 0.5)
-    elif f == "past_purchases": data[f] = max(1, int(time_spent / 10))
-    elif f == "price": data[f] = 1000 + views * 200
-    elif f == "rating": data[f] = 4.0 + cart * 0.1
-    elif f == "time_spent": data[f] = time_spent
-    elif f == "view_count": data[f] = views
-    else: data[f] = 0
+    if f == "avg_spent":
+        data[f] = 3000 + cart * 1500
+    elif f == "cart_additions":
+        data[f] = cart
+    elif f == "discount":
+        data[f] = min(0.1 + views * 0.01, 0.5)
+    elif f == "past_purchases":
+        data[f] = max(1, int(time_spent / 10))
+    elif f == "price":
+        data[f] = 1000 + views * 200
+    elif f == "rating":
+        data[f] = 4.0 + cart * 0.1
+    elif f == "time_spent":
+        data[f] = time_spent
+    elif f == "view_count":
+        data[f] = views
+    else:
+        data[f] = 0
 
 input_data = pd.DataFrame([data])
+
+# ---------------- PREDICTION ----------------
 base_prob = model.predict_proba(input_data)[0][1]
-engagement = min((views*0.05 + cart*0.25 + time_spent*0.01), 1)
+
+engagement = min(
+    (views * 0.05 + cart * 0.25 + time_spent * 0.01),
+    1
+)
+
 final_prob = min(0.7 * base_prob + 0.3 * engagement, 0.95)
 
 st.sidebar.success(f"Purchase Probability: {final_prob:.2f}")
 
+# ---------------- COUPON ENGINE ----------------
+st.sidebar.subheader("🎁 Coupon Recommendation")
+
+if final_prob < 0.3:
+    coupon = "🔥 30% OFF Coupon"
+    reason = "High chance of cart abandonment"
+    st.sidebar.error(f"{coupon}\n\n{reason}")
+
+elif final_prob < 0.6:
+    coupon = "🎯 10% OFF Coupon"
+    reason = "Needs slight push to convert"
+    st.sidebar.warning(f"{coupon}\n\n{reason}")
+
+else:
+    coupon = "✅ No Coupon Needed"
+    reason = "User likely to purchase anyway"
+    st.sidebar.success(f"{coupon}\n\n{reason}")
