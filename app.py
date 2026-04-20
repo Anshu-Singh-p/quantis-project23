@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
-    page_title="Quantis Smart Store Prototype",
+    page_title="Quantis  Prototype",
     layout="wide",
     page_icon="🛍️"
 )
@@ -85,9 +85,7 @@ filtered_products = [
 
 # ---------------- HOME ----------------
 if page == "Home":
-    st.markdown("<div class='title'>🛍️ Quantis Smart Store Prototype</div>", unsafe_allow_html=True)
-    st.markdown("<div class='subtitle'>Smart shopping powered by AI</div>", unsafe_allow_html=True)
-
+    st.markdown("<div class='title'>🛍️ Quantis Prototype</div>", unsafe_allow_html=True)
     cols = st.columns(4)
 
     for i, product in enumerate(filtered_products):
