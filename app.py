@@ -74,7 +74,7 @@ filtered_products = [
 
 # ---------------- HOME ----------------
 if page == "Home":
-    st.markdown("<div class='title'>🛍️ Quantis Smart Store</div>", unsafe_allow_html=True)
+    st.markdown("<div class='title'>🛍️ Quantis Smart Store Prototype</div>", unsafe_allow_html=True)
     st.markdown("<div class='subtitle'>Smart shopping powered by AI</div>", unsafe_allow_html=True)
 
     cols = st.columns(4)
