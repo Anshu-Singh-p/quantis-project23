@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 # ---------------- PAGE CONFIG ----------------
 st.set_page_config(
-    page_title="Quantis Smart Store",
+    page_title="Quantis Smart Store Prototype",
     layout="wide",
     page_icon="🛍️"
 )
